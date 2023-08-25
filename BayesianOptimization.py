@@ -229,29 +229,25 @@ def surrogate_model_quality(surrogate_preds, true_values):
 def plot_black_box_and_surrogate(num_parameters, surrogate):
     # Calculate the black box system outputs
     # Generate data points for plotting
-    x_bb = get_parameter_space_samples(0, 1, 20, num_parameters)
-    x = np.linspace(min(x_bb), max(x_bb), 100)  # Adjust the range as needed
+    x = get_parameter_space_samples(0, 1, 20, num_parameters)
 
     # Calculate the black box system outputs
-    true_y = black_box_system(x_bb)
+    true_y = black_box_system(x)
 
     # Predict surrogate model outputs
-    predicted_y, _ = surrogate.predict(x.reshape(-1, 1), return_std=True)
+    predicted_y, _ = surrogate.predict(x, return_std=True)
 
     # Create the plot
     plt.figure(figsize=(10, 6))
 
     # Plot the black box system
-    plt.scatter(x_bb, true_y, label='Black Box System', color='blue', alpha=0.5)
-
-    # Plot the surrogate model predictions
-    plt.plot(x, predicted_y, label='Surrogate Model', color='red')
+    plt.scatter(x, true_y, label='Black Box System', color='blue', alpha=0.5)
+    plt.scatter(x, predicted_y, label='Surrogate Model', color='red', alpha=0.5)
 
     # Add labels, title, and legend
     plt.xlabel('Input')
     plt.ylabel('Output')
     plt.title('Comparison: Black Box System vs. Surrogate Model')
     plt.legend()
-
-    # Show the plot
+    plt.xlim(min(x), max(x))
     plt.show()
