@@ -1,4 +1,4 @@
-# Bayesian Optimization: How to approximate to the optimum of an expensive Black Box system by using a cheap surrogate model
+# Bayesian Optimization: Approximate to the optimum of an expensive Black Box system by using a cheap surrogate model
 
 This code demonstrates the use of Bayesian optimization to approximate the optimal solution of a black box system
 using surrogate models. Bayesian optimization is an efficient technique for optimizing expensive-to-evaluate functions
@@ -6,10 +6,13 @@ by iteratively selecting the next point to evaluate based on the surrogate model
 function.
 
 <div style="display: flex;">
-  <img src="img/bb_system.jpg" style="width: 25%;" />
-  <img src="img/surrogate_it39.jpg" style="width: 25%;" />
-  <img src="img/surrogate_it79" style="width: 25%;" />
-  <img src="img/bb_vs_surrogate.jpg" style="width: 25%;" />
+  <img src="img/bb_system.jpg" style="width: 33.33%;" />
+  <img src="img/surrogate_it39.jpg" style="width: 33.33%;" />
+  <img src="img/surrogate_it79.jpg" style="width: 33.33%;" />
+</div>
+
+<div style="display: flex;">
+  <img src="img/bb_vs_surrogate.jpg" style="width: 100%;" />
 </div>
 
 ## Objective
