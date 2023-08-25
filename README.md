@@ -6,10 +6,10 @@ by iteratively selecting the next point to evaluate based on the surrogate model
 function.
 
 <div style="display: flex;">
-  <img src="img/bb_system.jpg" style="width: 25%;" />
-  <img src="img/surrogate_it39.jpg" style="width: 25%;" />
-  <img src="img/surrogate_it79.jpg" style="width: 25%;" />
-  <img src="img/bb_vs_surrogate.jpg" style="width: 25%;" />
+  <img src="https://github.com/majobasgall/bayesian-optimization/raw/main/img/bb_system.jpg" style="width: 25%;" />
+  <img src="https://github.com/majobasgall/bayesian-optimization/raw/main/img/surrogate_it39.jpg" style="width: 25%;" />
+  <img src="https://github.com/majobasgall/bayesian-optimization/raw/main/img/surrogate_it79.jpg" style="width: 25%;" />
+  <img src="https://github.com/majobasgall/bayesian-optimization/raw/main/img/bb_vs_surrogate.jpg" style="width: 25%;" />
 </div>
 
 ## Objective
@@ -33,7 +33,7 @@ When using surrogate models for optimization, keep the following considerations 
   The `get_parameter_space_samples` function gets random parameter space samples.
 
 - **Model Selection:** Experiment with different surrogate models (kernels) such as RBF, Matern, and others to find the
-  best fit for your problem. The `find_best_kernel` function select the "best" model. You can play with that to try more
+  best fit for your problem. The `find_best_kernel` function selects the "best" model. You can play with that to try more
   kernels and configurations.
 
 - **Overfitting:** Be cautious of overfitting. Regularly validate the surrogate model's performance and consider adding
