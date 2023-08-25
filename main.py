@@ -14,7 +14,7 @@ def main():
 
     bayesian_optimization = BayesianOptimization(black_box_system, num_initial_samples, num_samples_surrogate,
                                                  parameter_bounds, num_parameters, num_optimization_steps)
-    result = bayesian_optimization.optimize(show_plots=False)
+    result = bayesian_optimization.optimize(show_plots=True)
     print(f"Best Configuration: {result.best_configuration} | Best Output: {result.best_output}")
 
     if num_parameters == 1:
