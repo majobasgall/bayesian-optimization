@@ -16,9 +16,9 @@ function.
 
 The idea is to find the optimal configuration of parameters for a black box system, where
 evaluating the black box system is time-consuming. Bayesian Optimization uses a surrogate model, in this case, a
-Gaussian Process
-Regressor (but can be Random Forest, for example), to predict the behavior of the black box system and guide the search
-for the optimal configuration.
+Gaussian Process Regressor (but can be Random Forest Regressor, for example), to predict the behavior of the black box
+system and an acquisition function (a common one is the Upper Confidence Bound (UCB), or the probability of improvement)
+that guides the search for the optimal configuration.
 
 ## Considerations
 
@@ -33,7 +33,8 @@ When using surrogate models for optimization, keep the following considerations 
   The `get_parameter_space_samples` function gets random parameter space samples.
 
 - **Model Selection:** Experiment with different surrogate models (kernels) such as RBF, Matern, and others to find the
-  best fit for your problem. The `find_best_kernel` function selects the "best" model. You can play with that to try more
+  best fit for your problem. The `find_best_kernel` function selects the "best" model. You can play with that to try
+  more
   kernels and configurations.
 
 - **Overfitting:** Be cautious of overfitting. Regularly validate the surrogate model's performance and consider adding
