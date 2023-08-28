@@ -1,7 +1,5 @@
-from math import sin, pi
-
 import numpy as np
-from matplotlib import pyplot, pyplot as plt
+from matplotlib import pyplot as plt
 from numpy import asarray, arange
 from numpy.random import normal
 from scipy.stats import norm
@@ -15,8 +13,10 @@ class BayesianOptimization:
                  max_iterations=50):
         self.objective_function = objective_function
         self.bounds = bounds
+        # parameter_space_samples = `num_samples_bb` lists of `num_parameters` elements
         self.parameter_space_samples = get_parameter_space_samples(self.bounds[0], self.bounds[1], num_samples_bb,
                                                                    num_parameters)
+        # output_values = `num_samples_bb` arrays of `num_parameters` elements
         self.output_values = [black_box_system(params) for params in self.parameter_space_samples]
         self.surrogate_model = GaussianProcessRegressor(alpha=0.1, kernel=self.find_best_kernel())
         self.max_iterations = max_iterations
@@ -26,6 +26,12 @@ class BayesianOptimization:
 
     def get_surrogate(self):
         return self.surrogate_model
+
+    def get_samples(self):
+        return self.parameter_space_samples
+
+    def get_outputs(self):
+        return self.output_values
 
     def find_best_kernel(self):
         # Example data and targets
@@ -71,22 +77,22 @@ class BayesianOptimization:
     # plot real observations vs surrogate function
     def plot_surrogate(self, title=None):
         # scatter plot of inputs and real objective function
-        pyplot.scatter(self.parameter_space_samples, self.output_values)
+        # print(self.parameter_space_samples, self.output_values)
+        plt.scatter(self.parameter_space_samples, self.output_values)
         # line plot of surrogate function across domain
         x_samples = asarray(arange(0, 1, 0.0011))
         x_samples = x_samples.reshape(len(x_samples), 1)
 
         ysamples, _ = self.predict_surrogate(x_samples)
-        pyplot.plot(x_samples, ysamples)
-        pyplot.title(title)
-        # show the plot
-        pyplot.show()
+        plt.plot(x_samples, ysamples)
+        plt.title(title)
+        plt.show()
 
     def optimize(self, show_plots=False):
         # Fit the surrogate model with initial data
         self.fit_surrogate()
 
-        if self.num_parameters == 1 and show_plots:
+        if self.num_parameters < 3 and show_plots:
             self.plot_surrogate(title="Surrogate Model - Before iterations")
 
         desired_plots = 5  # Total number of plots to show
@@ -98,13 +104,13 @@ class BayesianOptimization:
             tmp_parameter_space_samples = get_parameter_space_samples(self.bounds[0], self.bounds[1],
                                                                       self.num_samples_surrogate, self.num_parameters)
             # Predict using surrogate model over temporal data
-            new_predicted_mean, new_predicted_std = self.predict_surrogate(tmp_parameter_space_samples)
+            tmp_predicted_mean, tmp_predicted_std = self.predict_surrogate(tmp_parameter_space_samples)
 
             # Predict using surrogate model over incremental data
-            predicted_mean, _ = self.predict_surrogate(self.parameter_space_samples)
+            predicted_mean, predicted_std = self.predict_surrogate(self.parameter_space_samples)
 
             # show some partial info
-            if self.num_parameters == 1 and show_plots:
+            if self.num_parameters < 3 and show_plots:
                 counter += 1
                 # Check if the counter has reached the calculated interval
                 if counter == message_interval:
@@ -116,11 +122,13 @@ class BayesianOptimization:
             best_mean = np.argmax(predicted_mean)
 
             # Calculate acquisition function values
-            acquisition_values = acquisition_function_2(new_predicted_mean, new_predicted_std,
-                                                        predicted_mean[best_mean])
+            acquisition_values = acquisition_function_prob_improvement(tmp_predicted_mean, tmp_predicted_std,
+                                                                       predicted_mean[best_mean])
+            # acquisition_values = acquisition_function_ucb(tmp_predicted_mean, tmp_predicted_std)
 
             # Find the next parameter combination to evaluate using the expensive model
             next_index = np.argmax(acquisition_values)
+
             next_sample = tmp_parameter_space_samples[next_index]
 
             # Evaluate the black box system and update the surrogate model
@@ -148,17 +156,45 @@ def get_parameter_space_samples(low, high, num_samples, num_parameters):
     return np.random.uniform(low=low, high=high, size=(num_samples, num_parameters))
 
 
-# Simulated function to represent the black box system
 def black_box_system(data, pnoise=0.1):
-    noise = normal(0, pnoise, data.shape)
+    """
+    Simulated function to represent the black box system
+    :param data: list with n elements where n is the variables of the problem
+    :param pnoise: level of noise
+    :return: single output value with random noise
+    """
+    data = np.asarray(data)  # Convert input to NumPy array
+    # print("inside bb system,  print data:")
+    # print(data)
+    # noise = normal(0, pnoise, data.shape)
+    noise = normal(0, pnoise)
     # simulated_output = (-np.sqrt(data) * np.sin(10 * data ** 2)) + noise
-    #simulated_output = (data ** 2 * sin(5 * pi * data) ** 6.0) + noise
-    simulated_output = (data ** 2 * np.sin(5 * np.pi * data) ** 6.0) + noise
+    output = np.sum(data ** 2 * np.sin(5 * np.pi * data) ** 6.0) + noise
+    # print(f"output = {output}")
+    return output
+    # return np.sum((data ** 2 * np.sin(5 * np.pi * data) ** 6.0) + noise)
 
-    return simulated_output
+
+def create_mesh_grid(a=None, dim=2):
+    if a is None:
+        a = [1, 2]
+    return np.array(np.meshgrid(*[a] * dim)).T.reshape(-1, dim)
 
 
-def plot_black_box_system():
+def get_estimated_optima(grid=create_mesh_grid(a=None, dim=2)):
+    # sample the domain without noise
+    y = [black_box_system(x, pnoise=0) for x in grid]
+
+    # find best result
+    ix = np.argmax(y)
+    print(f"Optima: {y[ix]}")
+
+
+def plot_black_box_system_1D():
+    """
+    Approximate plot of the black box system for 1 dimension
+    As the model is black box, we cannot do this in real world problems, but it is just a way to get an idea
+    """
     # grid-based sample of the domain [0,1]
     x1 = arange(0, 1, 0.01)
     # sample the domain without noise
@@ -171,15 +207,19 @@ def plot_black_box_system():
         x1[ix], y[ix]))  # This is something that in real problems we can't do, as we don't know y without noise
 
     # plot the points with noise
-    pyplot.scatter(x1, ynoise)
+    plt.scatter(x1, ynoise)
     # plot the points without noise
-    pyplot.plot(x1, y)
-    pyplot.title("Black Box System")
-    # show the plot
-    pyplot.show()
+    plt.plot(x1, y)
+
+    # Add labels, title, and legend
+    plt.xlabel('Input')
+    plt.ylabel('Output')
+    plt.title('Approximate plot of the Black Box system')
+    plt.legend()
+    plt.show()
 
 
-def acquisition_function(mean, std, kappa=2):
+def acquisition_function_ucb(mean, std, kappa=2):
     """
     Acquisition function: Upper Confidence Bound (UCB)
     :param mean: mean via surrogate function
@@ -190,7 +230,7 @@ def acquisition_function(mean, std, kappa=2):
     return mean + kappa * std
 
 
-def acquisition_function_2(mean, std, best):
+def acquisition_function_prob_improvement(mean, std, best):
     """
     Probability of improvement acquisition function
     :param mean: mean via surrogate function
@@ -202,10 +242,9 @@ def acquisition_function_2(mean, std, best):
 
 
 def surrogate_model_quality(surrogate_preds, true_values):
-
     mse = mean_squared_error(true_values, surrogate_preds)
     r2 = r2_score(true_values, surrogate_preds)
-
+    print("---------- Surrogate Model quality and interpretation ----------")
     print(f"Mean Squared Error (MSE): {mse}")
     print(f"R-squared (R2) Score: {r2}")
 
@@ -226,16 +265,16 @@ def surrogate_model_quality(surrogate_preds, true_values):
         print("R2 score indicates the surrogate's explanations are limited.")
 
 
-def plot_black_box_and_surrogate(num_parameters, surrogate):
+def plot_black_box_and_surrogate_1D(x, true_y, surrogate, result):
     # Calculate the black box system outputs
     # Generate data points for plotting
-    x = get_parameter_space_samples(0, 1, 20, num_parameters)
-
     # Calculate the black box system outputs
-    true_y = black_box_system(x)
+
+    # true_y = [black_box_system(param_sample) for param_sample in x]
 
     # Predict surrogate model outputs
-    predicted_y, _ = surrogate.predict(x, return_std=True)
+    # predicted_y, _ = [surrogate.predict(param_sample, return_std=True) for param_sample in x]
+    predicted_y = [prediction for prediction in surrogate.predict(x, return_std=False)]
 
     # Create the plot
     plt.figure(figsize=(10, 6))
@@ -243,9 +282,10 @@ def plot_black_box_and_surrogate(num_parameters, surrogate):
     # Plot the black box system
     plt.scatter(x, true_y, label='Black Box System', color='blue', alpha=0.5)
     plt.scatter(x, predicted_y, label='Surrogate Model', color='red', alpha=0.5)
+    plt.scatter(result.best_configuration, result.best_output, label='Approx Best', color='green', alpha=0.5)
 
     # Add labels, title, and legend
-    plt.xlabel('Input')
+    plt.xlabel('Input (parameters space samples)')
     plt.ylabel('Output')
     plt.title('Comparison: Black Box System vs. Surrogate Model')
     plt.legend()
