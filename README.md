@@ -19,6 +19,11 @@ evaluating the black box system is time-consuming. Bayesian Optimization uses a 
 Gaussian Process Regressor (but can be Random Forest Regressor, for example), to predict the behavior of the black box
 system and an acquisition function (a common one is the Upper Confidence Bound (UCB), or the probability of improvement)
 that guides the search for the optimal configuration.
+The general idea of the Bayesian Optimization workflow can be seen in the following image:
+
+<div style="display: flex;">
+  <img src="https://github.com/majobasgall/bayesian-optimization/raw/main/img/bayesian-workflow.png" style="width: 50%;" />
+</div>
 
 ## Considerations
 
