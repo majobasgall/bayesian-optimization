@@ -22,7 +22,7 @@ that guides the search for the optimal configuration.
 The general idea of the Bayesian Optimization workflow can be seen in the following image:
 
 <div style="display: flex;">
-  <img src="https://github.com/majobasgall/bayesian-optimization/raw/main/img/bayesian-workflow.png" style="width: 50%;" />
+  <img src="https://github.com/majobasgall/bayesian-optimization/raw/main/img/bayesian-workflow.jpg" style="width: 50%;" />
 </div>
 
 ## Considerations
